@@ -2,9 +2,12 @@ package ru.rozhi;
 
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.rozhi.exception.ApiException;
+import ru.rozhi.exception.InvalidRequestException;
 import ru.rozhi.exception.TechnicalException;
 
 @RestControllerAdvice
@@ -24,5 +27,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<@NonNull ApiErrorResponse> handleUnexpectedException(Exception ex) {
 
         return handleApiException(new TechnicalException(ex.getMessage()));
+    }
+
+    @ExceptionHandler({ServletRequestBindingException.class})
+    public ResponseEntity<@NonNull ApiErrorResponse> handleRequestException(ServletRequestBindingException ex) {
+        ApiException exception = new InvalidRequestException(ex.getMessage());
+        return handleApiException(exception);
+    }
+
+    @ExceptionHandler({HttpMessageNotReadableException.class})
+    public ResponseEntity<@NonNull ApiErrorResponse> handleRequestBodyException(HttpMessageNotReadableException ex) {
+        ApiException exception = new InvalidRequestException(ex.getMessage());
+        return handleApiException(exception);
     }
 }
